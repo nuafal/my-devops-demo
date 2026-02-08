@@ -10,6 +10,7 @@ A fully automated, self-healing web infrastructure deployed on Kubernetes. This 
 
 ## 📸 Project Dashboard
 **Mission Control Status:**
+
 ![Dashboard Screenshot](Screenshots/kubernetes.png)
 
 ---
