@@ -4,7 +4,7 @@
 A fully automated, self-healing web infrastructure deployed on Kubernetes.
 
 ### 🏗️ Architecture
-![Dashboard](screenshot/kubernetes.png)
+![Dashboard](Screenshots/kubernetes.png)
 
 ### 🤖 Automation (CI/CD)
 Implemented a GitHub Actions pipeline to build and push Docker images automatically.
