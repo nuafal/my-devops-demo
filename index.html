@@ -148,9 +148,9 @@
                 <h2 style="margin: 0;">Kubernetes Cluster</h2>
                 <span style="font-size: 0.875rem; color: var(--text-secondary);">Managed by Naufal</span>
             </div>
-            <div class="status-badge">
-                <span class="status-dot"></span>
-                OPERATIONAL
+            <div class="status-badge" id="status-badge">
+                <span class="status-dot" id="status-dot"></span>
+                <span id="status-text">CONNECTING...</span>
             </div>
         </div>
 
@@ -190,11 +190,74 @@
     </div>
 
     <script>
-        // Simulate "Live" data fetching
-        document.getElementById('build-id').textContent = 'v2.' + Math.floor(Math.random() * 100);
+        // 1. Define where the sensor is looking (Your GitHub Repository)
+        const owner = 'nuafal';
+        const repo = 'my-devops-demo';
         
-        console.log("System Status: Operational");
-        console.log("Connected to Kubernetes Service Endpoints...");
+        // This is the official GitHub API "wire" for your Actions
+        const githubApiUrl = `https://api.github.com/repos/${owner}/${repo}/actions/runs`;
+
+        // 2. Create the function to fetch the real data
+        async function fetchLivePipelineStatus() {
+            try {
+                // "Fetch" reaches across the internet to ask GitHub for the data
+                const response = await fetch(githubApiUrl);
+                const data = await response.json();
+
+                // Grab the very first run in the list (the most recent one)
+                const latestRun = data.workflow_runs[0];
+
+                // 3. Extract the exact status of the assembly line
+                const status = latestRun.status;       // e.g., "completed", "in_progress"
+                const conclusion = latestRun.conclusion; // e.g., "success", "failure"
+                const buildId = latestRun.run_number;
+
+                // 4. Update the Dashboard (The LED Board)
+                updateDashboard(status, conclusion, buildId);
+
+            } catch (error) {
+                console.error("Sensor wiring failed:", error);
+                document.getElementById('status-text').textContent = 'API ERROR';
+            }
+        }
+
+        // 3. The function that paints the dashboard based on the real data
+        function updateDashboard(status, conclusion, buildId) {
+            const badge = document.getElementById('status-badge');
+            const dot = document.getElementById('status-dot');
+            const text = document.getElementById('status-text');
+            
+            // Update the Build ID at the bottom of your page
+            document.getElementById('build-id').textContent = `v2.0.${buildId}`;
+
+            // Logic Check: Did the assembly line pass or fail?
+            if (status === 'completed' && conclusion === 'success') {
+                text.textContent = 'OPERATIONAL';
+                badge.style.backgroundColor = 'rgba(34, 197, 94, 0.1)';
+                badge.style.color = '#22c55e';
+                badge.style.borderColor = 'rgba(34, 197, 94, 0.2)';
+                dot.style.backgroundColor = '#22c55e';
+            } else if (status === 'completed' && conclusion === 'failure') {
+                text.textContent = 'PIPELINE FAILED';
+                badge.style.backgroundColor = 'rgba(239, 68, 68, 0.1)'; // Red background
+                badge.style.color = '#ef4444'; // Red text
+                badge.style.borderColor = 'rgba(239, 68, 68, 0.2)';
+                dot.style.backgroundColor = '#ef4444';
+            } else {
+                text.textContent = 'BUILD IN PROGRESS';
+                badge.style.backgroundColor = 'rgba(234, 179, 8, 0.1)'; // Yellow background
+                badge.style.color = '#eab308'; // Yellow text
+                badge.style.borderColor = 'rgba(234, 179, 8, 0.2)';
+                dot.style.backgroundColor = '#eab308';
+            }
+        }
+
+        // Run the sensor check immediately when the page loads
+        fetchLivePipelineStatus();
+        
+        // Optional: Make it check GitHub automatically every 30 seconds
+        setInterval(fetchLivePipelineStatus, 30000); 
+
     </script>
 </body>
 </html>
